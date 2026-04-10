@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker - Dashboard</title>
+    <!-- Modern Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Premium Stylesheet -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+    
+    <div class="container glass-panel">
+        <header class="header">
+            <div>
+                <h1>Expense Tracker Dashboard</h1>
+                <p class="subtitle">Track and analyze your daily operations.</p>
+            </div>
+            <a href="/add-expense" class="btn btn-primary">
+                <span>+</span> Add Expense
+            </a>
+        </header>
+
+        <main class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Amount (&#8377;)</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(expenses.length === 0){ %>
+                        <tr>
+                            <td colspan="5" class="empty-state">No expenses found. Time to add some!</td>
+                        </tr>
+                    <% } %>
+                    <% expenses.forEach(expense => { %>
+                    <tr class="table-row-hover">
+                        <td>
+                            <div class="date-badge"><%= expense.expense_date %></div>
+                        </td>
+                        <td>
+                            <span class="category-pill"><%= expense.category || 'Uncategorized' %></span>
+                        </td>
+                        <td class="font-medium text-light"><%= expense.title %></td>
+                        <td class="font-bold text-accent">&#8377; <%= expense.amount %></td>
+                        <td class="actions">
+                            <a href="/edit/<%= expense.id %>" class="action-btn edit-btn" title="Edit">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                            </a>
+                            <a href="/delete/<%= expense.id %>" class="action-btn delete-btn" title="Delete" onclick="return confirm('Are you sure you want to delete this expense?');">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </a>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </main>
+        
+        <section class="chart-section" style="margin-top: 3rem; background: rgba(0, 0, 0, 0.2); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);">
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: #a5b4fc; text-align: center; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Expenses by Category</h2>
+            <div style="max-width: 350px; margin: 0 auto;">
+                <canvas id="expenseChart"></canvas>
+            </div>
+        </section>
+    </div>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const rawStats = <%- statsData || '[]' %>;
+        
+        if (rawStats && rawStats.length > 0) {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            
+            const labels = rawStats.map(item => item.label);
+            const data = rawStats.map(item => Number(item.value));
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',   // blue
+                            'rgba(236, 72, 153, 0.8)',   // pink
+                            'rgba(139, 92, 246, 0.8)',   // violet
+                            'rgba(16, 185, 129, 0.8)',   // emerald
+                            'rgba(245, 158, 11, 0.8)',   // amber
+                            'rgba(239, 68, 68, 0.8)'     // red
+                        ],
+                        borderColor: 'rgba(30, 41, 59, 1)',
+                        borderWidth: 2,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#f8fafc',
+                                padding: 20,
+                                font: { family: "'Inter', sans-serif" }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += '₹ ' + context.parsed;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            // Hide chart section if no data
+            document.querySelector('.chart-section').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
