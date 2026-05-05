@@ -1,141 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker - Dashboard</title>
-    <!-- Modern Font: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Premium Stylesheet -->
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Tracker – Dashboard</title>
+  <meta name="description" content="Track and visualize your daily expenses by category.">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div class="bg-shape shape-1"></div>
-    <div class="bg-shape shape-2"></div>
-    
-    <div class="container glass-panel">
-        <header class="header">
-            <div>
-                <h1>Expense Tracker Dashboard</h1>
-                <p class="subtitle">Track and analyze your daily operations.</p>
-            </div>
-            <a href="/add-expense" class="btn btn-primary">
-                <span>+</span> Add Expense
-            </a>
-        </header>
+<div class="page-wrapper">
 
-        <main class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Category</th>
-                        <th>Description</th>
-                        <th>Amount (&#8377;)</th>
-                        <th class="text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if(expenses.length === 0){ %>
-                        <tr>
-                            <td colspan="5" class="empty-state">No expenses found. Time to add some!</td>
-                        </tr>
-                    <% } %>
-                    <% expenses.forEach(expense => { %>
-                    <tr class="table-row-hover">
-                        <td>
-                            <div class="date-badge"><%= expense.expense_date %></div>
-                        </td>
-                        <td>
-                            <span class="category-pill"><%= expense.category || 'Uncategorized' %></span>
-                        </td>
-                        <td class="font-medium text-light"><%= expense.title %></td>
-                        <td class="font-bold text-accent">&#8377; <%= expense.amount %></td>
-                        <td class="actions">
-                            <a href="/edit/<%= expense.id %>" class="action-btn edit-btn" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                            </a>
-                            <a href="/delete/<%= expense.id %>" class="action-btn delete-btn" title="Delete" onclick="return confirm('Are you sure you want to delete this expense?');">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                            </a>
-                        </td>
-                    </tr>
-                    <% }) %>
-                </tbody>
-            </table>
-        </main>
-        
-        <section class="chart-section" style="margin-top: 3rem; background: rgba(0, 0, 0, 0.2); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);">
-            <h2 style="font-size: 1.25rem; font-weight: 600; color: #a5b4fc; text-align: center; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Expenses by Category</h2>
-            <div style="max-width: 350px; margin: 0 auto;">
-                <canvas id="expenseChart"></canvas>
-            </div>
-        </section>
+  <!-- ══ HERO HEADER ══ -->
+  <header class="hero-header">
+    <div>
+      <div class="hero-title">💸 <span>Expense</span> Tracker</div>
+      <div class="hero-subtitle">── Monitor · Categorize · Analyze ──</div>
+    </div>
+    <a href="/add-expense" class="btn btn-primary" id="add-expense-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Expense
+    </a>
+  </header>
+
+  <!-- ══ SUMMARY CARDS ══ -->
+  <div class="summary-grid">
+    <div class="stat-card">
+      <div class="stat-card-icon icon-blue">💰</div>
+      <div>
+        <div class="stat-label">Total Spent</div>
+        <div class="stat-value">₹ <%= totalAmount ? Number(totalAmount).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2}) : '0.00' %></div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon icon-violet">🧾</div>
+      <div>
+        <div class="stat-label">Total Entries</div>
+        <div class="stat-value"><%= expenses.length %></div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon icon-emerald">📂</div>
+      <div>
+        <div class="stat-label">Categories Used</div>
+        <div class="stat-value"><%= categoryBreakdown.length %></div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon icon-amber">🏆</div>
+      <div>
+        <div class="stat-label">Top Category</div>
+        <div class="stat-value" style="font-size:1.3rem; color:var(--orange);">
+          <%= categoryBreakdown.length > 0
+              ? [...categoryBreakdown].sort((a,b) => Number(b.value)-Number(a.value))[0].label
+              : '—' %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DASHBOARD GRID ══ -->
+  <div class="dashboard-grid">
+
+    <!-- LEFT: Expenses Table -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-title"><span class="dot"></span>All Expenses</span>
+        <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted); letter-spacing:0.08em;">
+          <%= expenses.length %> RECORD<%= expenses.length !== 1 ? 'S' : '' %>
+        </span>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Amount (₹)</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if(expenses.length === 0){ %>
+              <tr>
+                <td colspan="5" class="empty-state">
+                  <span class="empty-icon">🧾</span>
+                  <p>No expenses yet — add your first one.</p>
+                </td>
+              </tr>
+            <% } %>
+            <% expenses.forEach(expense => { %>
+            <tr class="table-row-hover">
+              <td><div class="date-badge"><%= expense.expense_date %></div></td>
+              <td><span class="category-pill"><%= expense.category || 'Uncategorized' %></span></td>
+              <td class="font-medium text-light"><%= expense.title %></td>
+              <td class="text-accent">₹ <%= Number(expense.amount).toLocaleString('en-IN', {minimumFractionDigits:2}) %></td>
+              <td class="actions">
+                <a href="/edit/<%= expense.id %>" class="action-btn edit-btn" title="Edit" id="edit-<%= expense.id %>">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </a>
+                <a href="/delete/<%= expense.id %>" class="action-btn delete-btn" title="Delete" id="delete-<%= expense.id %>" onclick="return confirm('Delete this expense?');">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                </a>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        const rawStats = <%- statsData || '[]' %>;
-        
-        if (rawStats && rawStats.length > 0) {
-            const ctx = document.getElementById('expenseChart').getContext('2d');
-            
-            const labels = rawStats.map(item => item.label);
-            const data = rawStats.map(item => Number(item.value));
-            
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.8)',   // blue
-                            'rgba(236, 72, 153, 0.8)',   // pink
-                            'rgba(139, 92, 246, 0.8)',   // violet
-                            'rgba(16, 185, 129, 0.8)',   // emerald
-                            'rgba(245, 158, 11, 0.8)',   // amber
-                            'rgba(239, 68, 68, 0.8)'     // red
-                        ],
-                        borderColor: 'rgba(30, 41, 59, 1)',
-                        borderWidth: 2,
-                        hoverOffset: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    cutout: '65%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#f8fafc',
-                                padding: 20,
-                                font: { family: "'Inter', sans-serif" }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed !== null) {
-                                        label += '₹ ' + context.parsed;
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        } else {
-            // Hide chart section if no data
-            document.querySelector('.chart-section').style.display = 'none';
+    <!-- RIGHT: Chart + Breakdown -->
+    <div class="sidebar-stack">
+
+      <!-- Doughnut Chart -->
+      <div class="sidebar-panel" id="chart-panel">
+        <div class="sidebar-panel-header">
+          <span class="dot"></span> Spending by Category
+        </div>
+        <div class="sidebar-panel-body">
+          <div class="chart-wrap">
+            <canvas id="expenseChart" width="260" height="260"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Breakdown -->
+      <% if(categoryBreakdown.length > 0) { %>
+      <div class="sidebar-panel" id="breakdown-panel">
+        <div class="sidebar-panel-header">
+          <span class="dot"></span> Category Breakdown
+        </div>
+        <div class="sidebar-panel-body">
+          <ul class="breakdown-list">
+            <%
+              const sorted     = [...categoryBreakdown].sort((a,b) => Number(b.value) - Number(a.value));
+              const grandTotal = sorted.reduce((s,c) => s + Number(c.value), 0) || 1;
+              const BAR_COLORS = ['#f97316','#fb923c','#fdba74','#ea580c','#c2410c','#ff6b00'];
+            %>
+            <% sorted.forEach((cat, i) => {
+                const pct   = Math.round((Number(cat.value) / grandTotal) * 100);
+                const color = BAR_COLORS[i % BAR_COLORS.length];
+            %>
+            <li class="breakdown-item">
+              <div class="breakdown-meta">
+                <span class="breakdown-name"><%= cat.label %></span>
+                <span class="breakdown-amount">₹ <%= Number(cat.value).toLocaleString('en-IN', {minimumFractionDigits:2}) %></span>
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div class="progress-bar-bg" style="flex:1;">
+                  <div class="progress-bar-fill" style="width:<%= pct %>%; background:<%= color %>; box-shadow:0 0 6px <%= color %>80;"></div>
+                </div>
+                <span class="breakdown-pct"><%= pct %>%</span>
+              </div>
+            </li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+      <% } %>
+
+    </div>
+  </div><!-- /dashboard-grid -->
+
+</div><!-- /page-wrapper -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const rawStats   = <%- statsData || '[]' %>;
+  const chartPanel = document.getElementById('chart-panel');
+
+  if (rawStats && rawStats.length > 0) {
+    const ctx    = document.getElementById('expenseChart').getContext('2d');
+    const labels = rawStats.map(d => d.label);
+    const data   = rawStats.map(d => Number(d.value));
+
+    // Orange palette shades
+    const COLORS = ['#f97316','#fb923c','#fdba74','#ea580c','#c2410c','#ff6b00'];
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: COLORS,
+          borderColor: '#141414',
+          borderWidth: 4,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: false,
+        cutout: '66%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#a3a3a3',
+              padding: 14,
+              boxWidth: 12,
+              font: { family: "'Space Mono', monospace", size: 11, weight: '700' }
+            }
+          },
+          tooltip: {
+            backgroundColor: '#1a1a1a',
+            titleColor: '#f5f5f5',
+            bodyColor: '#f97316',
+            borderColor: 'rgba(249,115,22,0.3)',
+            borderWidth: 1,
+            padding: 10,
+            callbacks: {
+              label: ctx => '  ₹ ' + Number(ctx.parsed).toLocaleString('en-IN', {minimumFractionDigits:2})
+            }
+          }
         }
-    </script>
+      }
+    });
+  } else {
+    if (chartPanel) {
+      chartPanel.querySelector('.sidebar-panel-body').innerHTML =
+        `<div style="padding:2rem; text-align:center; color:#525252; font-family:'Space Mono',monospace; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em;">
+          <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">📊</span>
+          No data yet
+        </div>`;
+    }
+  }
+</script>
 </body>
 </html>

@@ -4,16 +4,22 @@ const Category = require('../models/category');
 // R (Read) - Get all expenses mapped with their category name and fetch stats
 exports.getHomePage = (req, res, next) => {
     let fetchedExpenses;
-    
+    let fetchedStats;
+
     Expense.fetchAll()
         .then(([expenses]) => {
             fetchedExpenses = expenses;
             return Expense.getCategoryStats();
         })
         .then(([stats]) => {
+            fetchedStats = stats;
+            // Compute total
+            const total = stats.reduce((sum, s) => sum + Number(s.value), 0);
             res.render('home', {
                 expenses: fetchedExpenses,
-                statsData: JSON.stringify(stats)
+                statsData: JSON.stringify(stats),
+                categoryBreakdown: fetchedStats,
+                totalAmount: total
             });
         })
         .catch(err => {

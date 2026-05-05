@@ -3,14 +3,13 @@ const pool = require('../utils/databaseUtil');
 async function initializeDatabase() {
     try {
         console.log("Connecting and creating tables...");
-        
+
         // Ensure Categories table exists
         await pool.execute(`
             CREATE TABLE IF NOT EXISTS categories (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 category_name VARCHAR(255) NOT NULL,
-                description TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                description TEXT
             )
         `);
         console.log("Categories table is ready.");
@@ -39,7 +38,7 @@ async function initializeDatabase() {
                 ['Utilities', 'Bills, electricity, internet, etc.'],
                 ['Entertainment', 'Movies, games, subscriptions']
             ];
-            
+
             for (let cat of defaultCategories) {
                 await pool.execute('INSERT INTO categories (category_name, description) VALUES (?, ?)', cat);
             }
